@@ -130,7 +130,10 @@ void run_bridge(HMODULE self) noexcept {
 
     std::unique_ptr<fmod_bridge::ControlLoop> ctrl;
     if (fns.ready())
-        ctrl = std::make_unique<fmod_bridge::ControlLoop>(bridge, img, cfg.audio.output_gain);
+        ctrl = std::make_unique<fmod_bridge::ControlLoop>(bridge, img, cfg.playback,
+                                                          cfg.audio.output_gain);
+
+    for (auto* s : mgr.sources_snapshot()) s->set_playback_options(cfg.playback);
 
     store.on_change([&bridge, &mgr, sync_sources, ctrl_ptr = ctrl.get()](const Config& c) {
         sync_sources(c);
@@ -153,6 +156,9 @@ void run_bridge(HMODULE self) noexcept {
         if (auto* yt = dynamic_cast<sources::YouTubeMusicSource*>(mgr.find("youtube_music"))) {
             yt->set_shuffle(c.youtube_music.shuffle);
         }
+
+        for (auto* s : mgr.sources_snapshot()) s->set_playback_options(c.playback);
+        if (ctrl_ptr) ctrl_ptr->push_playback_options(c.playback);
     });
 
     http::HttpServer http{mgr, bridge, store, cfg.general.port, ui_dir};
