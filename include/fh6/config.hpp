@@ -34,11 +34,19 @@ struct AudioConfig {
     float output_gain = 1.0f;
 };
 
+struct SpotifyConfig {
+    bool enabled = false;
+    std::filesystem::path librespot_path; // empty = look up on PATH
+    std::filesystem::path ffmpeg_path;    // empty = look up on PATH
+    std::filesystem::path cache_dir = "spotify_cache";
+};
+
 struct Config {
     GeneralConfig general;
     LocalFilesConfig local_files;
     YouTubeMusicConfig youtube_music;
     AudioConfig audio;
+    SpotifyConfig spotify;
 };
 
 // Missing file is fine, defaults are returned.

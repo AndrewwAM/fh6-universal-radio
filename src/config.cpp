@@ -77,6 +77,14 @@ Config load_config(const std::filesystem::path& path) {
     cfg.youtube_music.default_playlist = pick<std::string>(ym, "default_playlist", "");
     cfg.youtube_music.shuffle          = pick<bool>(ym, "shuffle", cfg.youtube_music.shuffle);
 
+    const auto& sp                     = section(root, "spotify");
+    cfg.spotify.enabled                = pick<bool>(sp, "enabled", cfg.spotify.enabled);
+    cfg.spotify.librespot_path         = pick_path(sp, "librespot_path");
+    cfg.spotify.ffmpeg_path            = pick_path(sp, "ffmpeg_path");
+    if (sp.contains("cache_dir")) {
+        cfg.spotify.cache_dir          = pick_path(sp, "cache_dir");
+    }
+
     const auto& au = section(root, "audio");
     cfg.audio.output_gain =
         static_cast<float>(pick<double>(au, "output_gain", cfg.audio.output_gain));
@@ -181,6 +189,12 @@ void save_config(const std::filesystem::path& path, const Config& cfg) {
     e.kv_path("ffmpeg_path", cfg.youtube_music.ffmpeg_path);
     e.kv("default_playlist", cfg.youtube_music.default_playlist);
     e.kv("shuffle", cfg.youtube_music.shuffle);
+
+    e.header("spotify");
+    e.kv("enabled", cfg.spotify.enabled);
+    e.kv_path("librespot_path", cfg.spotify.librespot_path);
+    e.kv_path("ffmpeg_path", cfg.spotify.ffmpeg_path);
+    e.kv_path("cache_dir", cfg.spotify.cache_dir);
 
     e.header("audio");
     e.kv("output_gain", (double)cfg.audio.output_gain);

@@ -26,5 +26,12 @@ ffmpeg_path        = ''                # blank = `ffmpeg`  on PATH
 default_playlist   = ""
 shuffle            = true
 
+[spotify]
+enabled            = false
+librespot_path     = ''                # blank = `librespot` on PATH
+ffmpeg_path        = ''                # blank = `ffmpeg` on PATH
+cache_dir          = 'spotify_cache'   # folder to save the Spotify Connect auth data
+
+
 [audio]
 output_gain = 1.0

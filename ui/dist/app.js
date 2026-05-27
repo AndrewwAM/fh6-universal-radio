@@ -136,6 +136,12 @@ const SCHEMA = [
     ["default_playlist", "Default playlist URL",   "text"],
     ["shuffle",          "Shuffle",                "checkbox"],
   ]],
+  ["spotify", "Spotify Connect", [
+    ["enabled",        "Enabled",                    "checkbox"],
+    ["librespot_path", "librespot.exe path",         "text"],
+    ["ffmpeg_path",    "ffmpeg.exe path (optional)", "text"],
+    ["cache_dir",      "Cache directory",            "text"],
+  ]],
   ["audio", "Audio", [
     ["output_gain", "Output gain", "number", 0, 1, 0.01],
   ]],

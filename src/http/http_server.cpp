@@ -5,6 +5,7 @@
 #include "fh6/log.hpp"
 #include "fh6/sources/local_file_source.hpp"
 #include "fh6/sources/youtube_music_source.hpp"
+#include "fh6/sources/spotify_source.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -125,6 +126,13 @@ json config_to_json(const Config& c) {
              {"default_playlist", c.youtube_music.default_playlist},
              {"shuffle", c.youtube_music.shuffle},
          }},
+         {"spotify",
+         json{
+             {"enabled", c.spotify.enabled},
+             {"librespot_path", path_s(c.spotify.librespot_path)},
+             {"ffmpeg_path", path_s(c.spotify.ffmpeg_path)},
+             {"cache_dir", path_s(c.spotify.cache_dir)},
+         }},
         {"audio",
          json{
              {"output_gain", c.audio.output_gain},
@@ -168,6 +176,12 @@ void apply_patch(Config& c, const json& j) {
         c.youtube_music.default_playlist =
             pull(*it, "default_playlist", c.youtube_music.default_playlist);
         c.youtube_music.shuffle = pull(*it, "shuffle", c.youtube_music.shuffle);
+    }
+    if (auto it = j.find("spotify"); it != j.end()) {
+        c.spotify.enabled        = pull(*it, "enabled", c.spotify.enabled);
+        c.spotify.librespot_path = pull_path(*it, "librespot_path", c.spotify.librespot_path);
+        c.spotify.ffmpeg_path    = pull_path(*it, "ffmpeg_path", c.spotify.ffmpeg_path);
+        c.spotify.cache_dir      = pull_path(*it, "cache_dir", c.spotify.cache_dir);
     }
     if (auto it = j.find("audio"); it != j.end()) {
         c.audio.output_gain = pull(*it, "output_gain", c.audio.output_gain);
