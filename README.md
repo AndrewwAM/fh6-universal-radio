@@ -44,7 +44,7 @@ winget install Gyan.FFmpeg
 winget install DenoLand.Deno
 ```
 
-Then restart the game. If the tools still aren't found, reboot your PC so the `PATH` updates properly.
+Then restart the game.
 
 `yt-dlp` can also be pointed at explicitly in the dashboard under **Settings > YouTube Music** if you prefer a manual install.
 `ffmpeg` can also be configured under **Settings > General > ffmpeg path**.
@@ -59,13 +59,28 @@ Private/age-restricted content also needs a Netscape `cookies.txt` exported from
 
 ## Build from source
 
-Requires **Visual Studio 2022+** with the *Desktop development with C++* workload (CMake is bundled) and the **Forza Horizon 6** radio-station media overlay from any existing radio mod ZIP. The overlay is mod-agnostic and the assets are modified copies of game files, so we don't ship them.
+The output is always a Windows `version.dll` You also need the radio-station media overlay from any existing radio mod ZIP. It's mod-agnostic, but the assets are modified copies of game files so we don't ship them.
+
+### Windows
+
+Requires **Visual Studio 2022+** with the *Desktop development with C++* workload (CMake is bundled).
 
 ```powershell
 .\scripts\get-deps.ps1                                                  # one-time: header-only deps
 .\scripts\build.ps1                                                     # compile + stage dist\
 .\scripts\fetch-media.ps1 -Source "C:\path\to\radio-mod.zip"            # radio-station overlay
 .\scripts\install.ps1 -GameDir "C:\XboxGames\Forza Horizon 6\Content"   # copy into game
+```
+
+### Linux (cross-compile to Windows)
+
+Requires **CMake** and **llvm-mingw** (the Clang-based MinGW-w64 toolchain, since the codebase uses MSVC SEH which GCC-mingw doesn't implement). On Arch: `sudo pacman -S llvm-mingw cmake`. On other distros, grab a release from [mstorsjo/llvm-mingw](https://github.com/mstorsjo/llvm-mingw/releases) and unpack it under `/opt/llvm-mingw` (the build script auto-detects that path).
+
+```bash
+./scripts/get-deps.sh                                                   # one-time: header-only deps
+./scripts/build.sh                                                      # compile + stage dist/
+./scripts/fetch-media.sh /path/to/radio-mod.zip                         # radio-station overlay
+./scripts/install.sh ~/.steam/steam/steamapps/common/ForzaHorizon6      # copy into game (Proton prefix)
 ```
 
 ## Troubleshooting

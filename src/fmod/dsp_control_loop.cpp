@@ -33,8 +33,9 @@ ControlLoop::ControlLoop(DSPBridge& bridge, const PEImage& img, PlaybackConfig i
       thread_{[this](const std::stop_token& tok) { run(tok); }} {}
 
 void ControlLoop::push_playback_options(PlaybackConfig opts) {
-    playback_opts_.store(std::make_shared<const PlaybackConfig>(std::move(opts)),
-                         std::memory_order_release);
+    auto next = std::make_shared<const PlaybackConfig>(std::move(opts));
+    std::lock_guard lock{playback_opts_mtx_};
+    playback_opts_ = std::move(next);
 }
 
 ControlLoop::~ControlLoop() {
@@ -176,7 +177,11 @@ void ControlLoop::run_playback_state_machines(time_point now) noexcept {
     constexpr auto kRaceStartDebounce   = 45s;
     constexpr auto kRaceRestartDebounce = 5s;
 
-    auto opts = playback_opts_.load(std::memory_order_acquire);
+    std::shared_ptr<const PlaybackConfig> opts;
+    {
+        std::lock_guard lock{playback_opts_mtx_};
+        opts = playback_opts_;
+    }
     if (!opts) return;
     auto* active = bridge_.manager().active();
     if (!active) {

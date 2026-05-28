@@ -1,33 +1,9 @@
 // version.dll proxy: forwards every export to the real system DLL via PE
-// forwarders, and spawns the bridge on DLL_PROCESS_ATTACH so the loader is
-// never blocked on FMOD discovery or HTTP startup.
+// forwarders (declared in version.def), and spawns the bridge on
+// DLL_PROCESS_ATTACH so the loader is never blocked on FMOD discovery
+// or HTTP startup.
 
 #include <windows.h>
-
-// Forwarding to "version.dll" without a path resolves back to us; the
-// absolute system32 path is what breaks the basename collision.
-#define FWD(name) \
-    __pragma(comment(linker, "/EXPORT:" #name "=C:\\Windows\\System32\\version." #name))
-
-FWD(GetFileVersionInfoA)
-FWD(GetFileVersionInfoByHandle)
-FWD(GetFileVersionInfoExA)
-FWD(GetFileVersionInfoExW)
-FWD(GetFileVersionInfoSizeA)
-FWD(GetFileVersionInfoSizeExA)
-FWD(GetFileVersionInfoSizeExW)
-FWD(GetFileVersionInfoSizeW)
-FWD(GetFileVersionInfoW)
-FWD(VerFindFileA)
-FWD(VerFindFileW)
-FWD(VerInstallFileA)
-FWD(VerInstallFileW)
-FWD(VerLanguageNameA)
-FWD(VerLanguageNameW)
-FWD(VerQueryValueA)
-FWD(VerQueryValueW)
-
-#undef FWD
 
 namespace fh6 {
 void run_bridge(HMODULE self) noexcept;

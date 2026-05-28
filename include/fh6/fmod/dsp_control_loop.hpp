@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <stop_token>
 #include <thread>
 
@@ -57,7 +58,12 @@ private:
     std::uint64_t prev_calls_ = 0;
     int stale_ticks_          = 0;
 
-    std::atomic<std::shared_ptr<const PlaybackConfig>> playback_opts_;
+    // std::atomic<std::shared_ptr<T>> would be ideal here but libc++ in
+    // llvm-mingw doesn't ship the C++20 specialization; a plain mutex works
+    // for both call sites (an occasional dashboard-driven store, an
+    // every-tick load on the control loop) at negligible cost.
+    mutable std::mutex playback_opts_mtx_;
+    std::shared_ptr<const PlaybackConfig> playback_opts_;
 
     bool prev_r10_          = false;
     bool prev_race_         = false;
