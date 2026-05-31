@@ -138,6 +138,7 @@ ProbedMetadata probe_metadata(const std::wstring& ff_bin, const std::filesystem:
 struct LocalFileSource::Decoder {
     ma_decoder ma{};
     bool ma_open = false;
+    bool ma_eof = false;
 
     HANDLE ff_job              = nullptr;
     HANDLE ff_proc             = nullptr;
@@ -411,6 +412,19 @@ void LocalFileSource::pump(RingBuffer& ring) {
     };
 
     if (dec_->ma_open) {
+        // if end of the file, wait for the ring buffer to drain
+        if (dec_->ma_eof) {
+            ma_uint64 cursor = 0;
+            if (ma_decoder_get_cursor_in_pcm_frames(&dec_->ma, &cursor) == MA_SUCCESS) {
+                const uint64_t queued = ring.readable() / kFrameBytes;
+                const uint64_t played = cursor > queued ? cursor - queued : 0;
+                position_ms_.store((played * 1000ull) / kSampleRate, std::memory_order_release);
+            }
+
+            if (ring.readable() == 0) advance_at_eof();
+            return;
+        }
+
         constexpr std::size_t kChunkFrames = 4096;
         while (ring.writable() >= kChunkFrames * kFrameBytes) {
             int16_t scratch[kChunkFrames * 2];
@@ -418,12 +432,15 @@ void LocalFileSource::pump(RingBuffer& ring) {
             if (ma_decoder_read_pcm_frames(&dec_->ma, scratch, kChunkFrames, &read) != MA_SUCCESS)
                 read = 0;
             if (read == 0) {
-                advance_at_eof();
-                return;
+                dec_->ma_eof = true;
+                break;
             }
             apply_dsp(scratch, static_cast<std::size_t>(read));
             ring.write(scratch, read * kFrameBytes);
-            if (read < kChunkFrames) break;
+            if (read < kChunkFrames) {
+                dec_->ma_eof = true;
+                break;
+            }
         }
 
         // Audible head, not decoder head: subtract what's still queued in the ring.
