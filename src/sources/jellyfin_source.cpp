@@ -153,7 +153,8 @@ std::optional<std::vector<JellyfinTrack>> fetch_tracks(const JellyfinConfig& cfg
             if (auto aa = item.find("AlbumArtist"); aa != item.end() && aa->is_string())
                 t.artist = aa->get<std::string>();
             else if (auto ar = item.find("Artists");
-                     ar != item.end() && ar->is_array() && !ar->empty())
+                     ar != item.end() && ar->is_array() && !ar->empty()
+                     && ar->front().is_string())
                 t.artist = ar->front().get<std::string>();
             t.album = item.value("Album", "");
             if (auto r = item.find("RunTimeTicks");
