@@ -35,6 +35,12 @@ std::filesystem::path module_directory(HMODULE self) {
     return std::filesystem::path{buf}.parent_path();
 }
 
+SpotifyConfig anchor_spotify(SpotifyConfig sp, const std::filesystem::path& data_dir) {
+    if (!sp.cache_dir.empty() && sp.cache_dir.is_relative())
+        sp.cache_dir = data_dir / sp.cache_dir;
+    return sp;
+}
+
 std::string slurp(const std::filesystem::path& p) {
     std::ifstream in{p, std::ios::binary};
     if (!in) return {};
@@ -107,7 +113,7 @@ void run_bridge(HMODULE self) noexcept {
     // Register/unregister sources to match the enabled flags. Called at
     // startup and on every config change so toggling enabled adds/removes
     // the dashboard tile live, without a game restart.
-    auto sync_sources = [&mgr](const Config& c) {
+    auto sync_sources = [&mgr, &data_dir](const Config& c) {
         if (c.local_files.enabled && !mgr.find("local_files")) {
             auto src = std::make_unique<sources::LocalFileSource>(c.local_files,
                                                                   c.general.ffmpeg_path);
@@ -136,7 +142,8 @@ void run_bridge(HMODULE self) noexcept {
             mgr.unregister_source("external_audio");
         }
         if (c.spotify.enabled && !mgr.find("spotify")) {
-            auto src = std::make_unique<sources::SpotifySource>(c.spotify, c.general.ffmpeg_path);
+            auto src = std::make_unique<sources::SpotifySource>(
+                anchor_spotify(c.spotify, data_dir), c.general.ffmpeg_path);
             if (src->initialize()) mgr.register_source(std::move(src));
         } else if (!c.spotify.enabled && mgr.find("spotify")) {
             mgr.unregister_source("spotify");
@@ -160,7 +167,7 @@ void run_bridge(HMODULE self) noexcept {
 
     for (auto* s : mgr.sources_snapshot()) s->set_playback_options(cfg.playback);
 
-    store.on_change([&bridge, &mgr, sync_sources, ctrl_ptr = ctrl.get()](const Config& c) {
+    store.on_change([&bridge, &mgr, &data_dir, sync_sources, ctrl_ptr = ctrl.get()](const Config& c) {
         sync_sources(c);
         if (!mgr.active()) {
             if (!mgr.switch_to(c.general.default_source)) mgr.switch_to(c.general.fallback_source);
@@ -192,7 +199,7 @@ void run_bridge(HMODULE self) noexcept {
             ext->set_config(c.external_audio);
         }
         if (auto* sp = dynamic_cast<sources::SpotifySource*>(mgr.find("spotify"))) {
-            sp->set_config(c.spotify, c.general.ffmpeg_path);
+            sp->set_config(anchor_spotify(c.spotify, data_dir), c.general.ffmpeg_path);
         }
 
         for (auto* s : mgr.sources_snapshot()) s->set_playback_options(c.playback);
