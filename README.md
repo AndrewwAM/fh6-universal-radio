@@ -6,7 +6,7 @@
 
 <p align="center"><img src="assets/banner.png" alt="FH6 Universal Radio" /></p>
 
-An open-source radio mod for **Forza Horizon 6**. Adds a new in-game radio station fed from your **local music**, **YouTube Music**, **Jellyfin** server, or **any Windows app** (Spotify, Deezer, a browser tab...), controlled from a browser dashboard.
+An open-source radio mod for **Forza Horizon 6**. Adds a new in-game radio station fed from your **local music**, **Spotify**, **YouTube Music**, **Jellyfin** server, or **any Windows app** (Deezer, a browser tab...), controlled from a browser dashboard.
 
 <p align="center">
   <img src="assets/ingame.png" alt="In-game radio station" width="49%" />
@@ -18,7 +18,7 @@ An open-source radio mod for **Forza Horizon 6**. Adds a new in-game radio stati
 - **Local files**: point it at any folder. MP3 / FLAC / WAV / OGG play out of the box; M4A / AAC / OPUS / WMA / etc. play if `ffmpeg` is installed (same binary as YouTube Music below).
 - **YouTube Music**: paste any video, playlist, or YT Music URL from the dashboard.
 - **Jellyfin**: stream playlists from your own Jellyfin server.
-- **External audio**: capture any Windows app (Spotify, Deezer, a browser tab) and pipe it into the radio through a virtual audio cable; metadata and next/previous come from the Windows media session.
+- **External audio**: capture any Windows app (Deezer, a browser tab...) and pipe it into the radio through a virtual audio cable; metadata and next/previous come from the Windows media session.
 - **In-game radio integration**: audio is routed through FH6's radio bus, fades with menus and reacts to in-game volume like every other station.
 - **Live dashboard** at `http://localhost:8420`: switch source, transport controls, volume, settings.
 - **Race start action**: on race begin, advance to next track, restart the current one, or leave it alone.
